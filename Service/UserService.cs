@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.IdentityModel.Tokens;
 using SOA.DTOs;
@@ -40,61 +40,67 @@ namespace SOA.Service
 			await _userRepository.AddUser(usernew);
 
 		}
-		public async Task<object> UserLogin(string email, string password)
-		{
-		
-			var user = await _userRepository.GetUserByEmail(email);
-			if (user != null)
-			{
+        public async Task<object> UserLogin(string email, string password)
+        {
+            var user = await _userRepository.GetUserByEmail(email);
+            if (user != null)
+            {
+                // Xác minh mật khẩu
+                var verifyPassword = Authentication.VerifyPassword(password, user.Password.ToString());
+                if (verifyPassword == true)
+                {
+                    // Khai báo claims
+                    var claims = new[]
+                    {
+                new Claim(JwtRegisteredClaimNames.Sub, _config["Jwt:Subject"]),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("IdUser", user.IdUser.ToString()), // Thông tin user
+                new Claim("Email", user.Email)               // Thông tin email
+            };
 
-				var verifyPassword = Authentication.VerifyPassword(password, user.Password.ToString());
-				if (verifyPassword == true)
-				{
-					//create token
-					var claims = new[]{
-									new Claim(JwtRegisteredClaimNames.Sub, _config["jwt:subject"]),
-									new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-									new Claim("IdUser",user.IdUser.ToString()),
-									new Claim("Email",user.Email.ToString()),
+                    // Tạo key và credentials
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+                    var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-							 };
-					var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["jwt:key"]));
-					var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-					var token = new JwtSecurityToken(
-						_config["jwt:issuer"],
-						_config["jwt:audience"],
-						claims,
-						expires: DateTime.UtcNow.AddMinutes(60),
-						signingCredentials: signIn
-						);
-					string accesstoken = new JwtSecurityTokenHandler().WriteToken(token);
-					
-					var login_data = new
-					{
-						status = "ok",
-						message = "Login success",
-						token = accesstoken,
-						email = user.Email
-					};
-					return login_data;
-				}
-				else
-				{
-					return new
-					{
-						status = "no",
-						message = "Incorrect password"
-					};
-				}
-			}
-			else
-			{
-				return new
-				{
-					status = "no",
-					message = "email is not exists"
-				};
-			}
-		}
-	}
+                    // Tạo token
+                    var token = new JwtSecurityToken(
+                        issuer: _config["Jwt:Issuer"],        // Phát hành từ
+                        audience: _config["Jwt:Audience"],    // Người nhận hợp lệ
+                        claims: claims,                       // Đính kèm thông tin user
+                        expires: DateTime.UtcNow.AddMinutes(60), // Thời gian hết hạn
+                        signingCredentials: signIn            // Cách ký
+                    );
+
+                    // Kết quả
+                    string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+                    var loginData = new
+                    {
+                        status = "ok",
+                        message = "Login success",
+                        token = accessToken,    // Trả về token
+                        email = user.Email
+                    };
+
+                    return loginData;
+                }
+                else
+                {
+                    return new
+                    {
+                        status = "no",
+                        message = "Incorrect password"
+                    };
+                }
+            }
+            else
+            {
+                return new
+                {
+                    status = "no",
+                    message = "Email does not exist"
+                };
+            }
+        }
+
+    }
 }
