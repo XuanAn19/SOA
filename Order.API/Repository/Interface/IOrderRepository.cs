@@ -15,5 +15,7 @@ namespace Order.API.Repository.Interface
         Task<List<ProductDTO>> GetProductsAsync(string token);
         Task<OrderModel> UpdateOrderStatusAsync(int id, string status);
         Task<bool> DeleteOrderItemAsync(int id);
+        Task UpdateOrderTotalAmountAsync(int orderId, decimal additionalAmount);
+        Task<string> GetOrderStatusAsync(int orderId);
     }
 }

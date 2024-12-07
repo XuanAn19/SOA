@@ -145,7 +145,8 @@ namespace Order.API.Controllers
         {
             try
             {
-                var orderItem = await _orderService.CreateOrderItemAsync(orderItemDto);
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var orderItem = await _orderService.CreateOrderItemAsync(orderItemDto, token);
                 return Ok(new { message = "Order item created successfully.", orderItemId = orderItem.id });
             }
             catch (Exception ex)

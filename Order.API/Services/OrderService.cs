@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Order.API.DTOs;
 using Order.API.Models;
 using Order.API.Repository.Interface;
@@ -206,16 +207,45 @@ namespace Order.API.Services
         }
 
         // Phương thức để tạo mặt hàng mới trong đơn hàng
-        public async Task<OrderItemModel> CreateOrderItemAsync(CreateOrderItemDTO orderItemDto)
-        {
+        public async Task<OrderItemModel> CreateOrderItemAsync(CreateOrderItemDTO dto, string token)
+        {// Kiểm tra trạng thái đơn hàng
+            var orderStatus = await _orderRepository.GetOrderStatusAsync(dto.OrderId);
+            if (orderStatus == null)
+            {
+                throw new Exception($"Order with ID {dto} not found.");
+            }
+
+            if (orderStatus == "Completed")
+            {
+                throw new Exception($"Cannot add items to an order unless it is in 'Completed' status. Current status: {orderStatus}.");
+            }
+
+            // Lấy thông tin sản phẩm từ ProductService
+            var products = await _orderRepository.GetProductsAsync(token);
+            var product = products.FirstOrDefault(p => p.id == dto.ProductId);
+            if (product == null)
+            {
+                throw new Exception($"Product with ID {dto.ProductId} not found.");
+            }
+
+            // Tạo đối tượng OrderItem
             var orderItem = new OrderItemModel
             {
-                product_id = orderItemDto.ProductId,
-                quantity = orderItemDto.Quantity,
-                unit_price = orderItemDto.UnitPrice,
-                total_price = orderItemDto.Quantity * orderItemDto.UnitPrice
+                order_id = dto.OrderId,
+                product_id = product.id,
+                product_name = product.name,
+                quantity = dto.Quantity,
+                unit_price = product.price,
+                total_price = dto.Quantity * product.price
             };
-            return await _orderRepository.CreateOrderItemAsync(orderItem);
+
+            // Thêm sản phẩm vào chi tiết đơn hàng
+            await _orderRepository.CreateOrderItemAsync(orderItem);
+
+            // Cập nhật tổng tiền của đơn hàng
+            await _orderRepository.UpdateOrderTotalAmountAsync(dto.OrderId, orderItem.total_price);
+
+            return orderItem;
         }
 
         // Phương thức để xóa mặt hàng trong đơn hàng

@@ -6,7 +6,7 @@ namespace Order.API.Services.Interface
     public interface IOrderService
     {
         Task<OrderModel> CreateOrderAsync(CreateOrderDTO orderDto, string token);
-        Task<OrderItemModel> CreateOrderItemAsync(CreateOrderItemDTO orderItemDto);
+        Task<OrderItemModel> CreateOrderItemAsync(CreateOrderItemDTO dto, string token);
         Task<bool> DeleteOrderAsync(int id);
         Task<bool> DeleteOrderItemAsync(int id);
         Task<List<OrderDTO>> GetAllOrdersAsync();

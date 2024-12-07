@@ -105,21 +105,24 @@ namespace Order.API.Repository
 
 
         // Cập nhật mặt hàng trong đơn hàng
-        public async Task<OrderItemModel> UpdateOrderItemAsync(int id, OrderItemModel orderItem)
+        public async Task UpdateOrderTotalAmountAsync(int orderId, decimal additionalAmount)
         {
-            var existingOrderItem = await _context.other_items.FindAsync(id);
-            if (existingOrderItem != null)
+            var order = await _context.orders.FirstOrDefaultAsync(o => o.id == orderId);
+            if (order != null)
             {
-                existingOrderItem.product_name = orderItem.product_name;
-                existingOrderItem.quantity = orderItem.quantity;
-                existingOrderItem.unit_price = orderItem.unit_price;
-                existingOrderItem.total_price = orderItem.total_price;
-
+                order.total_amount += additionalAmount;
+                _context.orders.Update(order);
                 await _context.SaveChangesAsync();
-                return existingOrderItem;
             }
-            return null;
         }
+
+        //kiểm tra trạng thái đơn hàng.
+        public async Task<string> GetOrderStatusAsync(int orderId)
+        {
+            var order = await _context.orders.FirstOrDefaultAsync(o => o.id == orderId);
+            return order?.status;
+        }
+
 
         // Xóa mặt hàng trong đơn hàng
         public async Task<bool> DeleteOrderItemAsync(int id)
