@@ -139,7 +139,7 @@ namespace Order.API.Controllers
             }
         }
 
-        /*//POST /order_items: Tạo mặt hàng mới trong đơn hàng.
+        //POST /order_items: Tạo mặt hàng mới trong đơn hàng.
         [HttpPost("order_items")]
         public async Task<IActionResult> CreateOrderItem([FromBody] CreateOrderItemDTO orderItemDto)
         {
@@ -152,8 +152,9 @@ namespace Order.API.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
-        }*/
-       /* [HttpDelete("order_items/{id}")]
+        }
+
+        [HttpDelete("order_items/{id}")]
         public async Task<IActionResult> DeleteOrderItem(int id)
         {
             try
@@ -169,7 +170,7 @@ namespace Order.API.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
-        }*/
+        }
 
 
 

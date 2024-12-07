@@ -10,8 +10,10 @@ namespace Order.API.Repository.Interface
         Task<List<OrderModel>> GetAllOrdersAsync();
         Task<OrderModel> GetOrderByIdAsync(int id);
         Task<OrderItemModel> GetOrderItemByIdAsync(int id);
+        Task<OrderItemModel> CreateOrderItemAsync(OrderItemModel orderItem);
         Task<List<OrderItemModel>> GetOrderItemsByOrderIdAsync(int orderId);
         Task<List<ProductDTO>> GetProductsAsync(string token);
         Task<OrderModel> UpdateOrderStatusAsync(int id, string status);
+        Task<bool> DeleteOrderItemAsync(int id);
     }
 }

@@ -2,7 +2,8 @@
 {
     public class CreateOrderItemDTO
     {
-        public int ProductId { get; set; }     // ID sản phẩm
-        public int Quantity { get; set; } // số lượng sản phẩm
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
     }
 }

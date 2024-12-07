@@ -204,5 +204,24 @@ namespace Order.API.Services
         {
             return await _orderRepository.GetOrderItemByIdAsync(idItem);
         }
+
+        // Phương thức để tạo mặt hàng mới trong đơn hàng
+        public async Task<OrderItemModel> CreateOrderItemAsync(CreateOrderItemDTO orderItemDto)
+        {
+            var orderItem = new OrderItemModel
+            {
+                product_id = orderItemDto.ProductId,
+                quantity = orderItemDto.Quantity,
+                unit_price = orderItemDto.UnitPrice,
+                total_price = orderItemDto.Quantity * orderItemDto.UnitPrice
+            };
+            return await _orderRepository.CreateOrderItemAsync(orderItem);
+        }
+
+        // Phương thức để xóa mặt hàng trong đơn hàng
+        public async Task<bool> DeleteOrderItemAsync(int id)
+        {
+            return await _orderRepository.DeleteOrderItemAsync(id);
+        }
     }
 }
